@@ -2,6 +2,8 @@
 
 #include "general.h"
 
+#include <stdlib.h>
+
 using namespace System;
 using namespace System::Collections::Generic;
 

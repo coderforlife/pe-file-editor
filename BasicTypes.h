@@ -194,7 +194,7 @@ namespace PE {
 		SectionName(array<char> ^s) : n(gcnew array<byte>(LENGTH))	{ this->CopyFrom((array<byte>^)s); }
 		SectionName(string s) : n(gcnew array<byte>(LENGTH))		{ this->CopyFrom(System::Text::Encoding::ASCII->GetBytes(s)); }
 
-		literal int LENGTH = 8; //IMAGE_SIZEOF_SHORT_NAME;
+		literal int LENGTH = IMAGE_SIZEOF_SHORT_NAME;
 
 		virtual string ToString() override
 		{

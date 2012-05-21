@@ -164,18 +164,28 @@ namespace PE {
 		Only = 2, //OVERWRITE_ONLY,		//only adds a resource if it will overwrite another resource
 	};
 
-	public value struct HexInt32 : IComparable, IFormattable, IConvertible, IComparable<UInt32>, IEquatable<UInt32>, IComparable<HexInt32>, IEquatable<HexInt32>
+	public interface class HexInt : IComparable, IFormattable, IConvertible
+	{
+		property int Size { int get(); }
+		property string DefaultFormat { string get(); }
+		property ulong Value { ulong get(); }
+	};
+
+	public value struct HexInt32 : HexInt, IComparable<UInt32>, IEquatable<UInt32>, IComparable<HexInt32>, IEquatable<HexInt32>
 	{
 	private:
 		UInt32 value;
 	public:
 		HexInt32(UInt32 value) { this->value = value; }
+		property virtual int Size { int get() { return 4; } }
+		property virtual string DefaultFormat { string get() { return L"X8"; } }
+		property virtual ulong Value { ulong get() { return this->value; } }
 		static operator UInt32(HexInt32 x) { return x.value; }
 		static operator HexInt32(UInt32 x) { return HexInt32(x); }
-		virtual string ToString() override { return this->value.ToString("X8"); }
-		string ToString(string format) { return this->value.ToString(String::IsNullOrEmpty(format) ? "X8" : format); }
-		virtual string ToString(IFormatProvider^ formatProvider) { return this->value.ToString("X8", formatProvider); }
-		virtual string ToString(string format, IFormatProvider^ formatProvider) { return this->value.ToString(String::IsNullOrEmpty(format) ? "X8" : format, formatProvider); }
+		virtual string ToString() override { return this->value.ToString(L"X8"); }
+		string ToString(string format) { return this->value.ToString(String::IsNullOrEmpty(format) ? L"X8" : format); }
+		virtual string ToString(IFormatProvider^ formatProvider) { return this->value.ToString(L"X8", formatProvider); }
+		virtual string ToString(string format, IFormatProvider^ formatProvider) { return this->value.ToString(String::IsNullOrEmpty(format) ? L"X8" : format, formatProvider); }
 
 		virtual bool Equals(HexInt32 o) { return this->value == o.value; }
 		virtual bool Equals(UInt32 o) { return this->value == o; }
@@ -211,18 +221,21 @@ namespace PE {
 		virtual object ToType(Type^ conversionType, IFormatProvider^ provider) = IConvertible::ToType { return Convert::ChangeType(this->value, conversionType, provider); }
 	};
 
-	public value struct HexInt64 : IComparable, IFormattable, IConvertible, IComparable<UInt64>, IEquatable<UInt64>, IComparable<HexInt64>, IEquatable<HexInt64>
+	public value struct HexInt64 : HexInt, IComparable<UInt64>, IEquatable<UInt64>, IComparable<HexInt64>, IEquatable<HexInt64>
 	{
 	private:
 		UInt64 value;
 	public:
 		HexInt64(UInt64 value) { this->value = value; }
+		property virtual int Size { int get() { return 8; } }
+		property virtual string DefaultFormat { string get() { return L"X8"; } }
+		property virtual ulong Value { ulong get() { return this->value; } }
 		static operator UInt64(HexInt64 x) { return x.value; }
 		static operator HexInt64(UInt64 x) { return HexInt64(x); }
-		virtual string ToString() override { return this->value.ToString("X16"); }
-		string ToString(string format) { return this->value.ToString(String::IsNullOrEmpty(format) ? "X16" : format); }
-		virtual string ToString(IFormatProvider^ formatProvider) { return this->value.ToString("X16", formatProvider); }
-		virtual string ToString(string format, IFormatProvider^ formatProvider) { return this->value.ToString(String::IsNullOrEmpty(format) ? "X16" : format, formatProvider); }
+		virtual string ToString() override { return this->value.ToString(L"X16"); }
+		string ToString(string format) { return this->value.ToString(String::IsNullOrEmpty(format) ? L"X16" : format); }
+		virtual string ToString(IFormatProvider^ formatProvider) { return this->value.ToString(L"X16", formatProvider); }
+		virtual string ToString(string format, IFormatProvider^ formatProvider) { return this->value.ToString(String::IsNullOrEmpty(format) ? L"X16" : format, formatProvider); }
 
 		virtual bool Equals(HexInt64 o) { return this->value == o.value; }
 		virtual bool Equals(UInt64 o) { return this->value == o; }

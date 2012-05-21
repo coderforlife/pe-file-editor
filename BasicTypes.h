@@ -164,6 +164,100 @@ namespace PE {
 		Only = 2, //OVERWRITE_ONLY,		//only adds a resource if it will overwrite another resource
 	};
 
+	public value struct HexInt32 : IComparable, IFormattable, IConvertible, IComparable<UInt32>, IEquatable<UInt32>, IComparable<HexInt32>, IEquatable<HexInt32>
+	{
+	private:
+		UInt32 value;
+	public:
+		HexInt32(UInt32 value) { this->value = value; }
+		static operator UInt32(HexInt32 x) { return x.value; }
+		static operator HexInt32(UInt32 x) { return HexInt32(x); }
+		virtual string ToString() override { return this->value.ToString("X8"); }
+		string ToString(string format) { return this->value.ToString(String::IsNullOrEmpty(format) ? "X8" : format); }
+		virtual string ToString(IFormatProvider^ formatProvider) { return this->value.ToString("X8", formatProvider); }
+		virtual string ToString(string format, IFormatProvider^ formatProvider) { return this->value.ToString(String::IsNullOrEmpty(format) ? "X8" : format, formatProvider); }
+
+		virtual bool Equals(HexInt32 o) { return this->value == o.value; }
+		virtual bool Equals(UInt32 o) { return this->value == o; }
+
+		virtual int CompareTo(HexInt32 o) { return this->value.CompareTo(o.value); }
+		virtual int CompareTo(UInt32 o) { return this->value.CompareTo(o); }
+
+		virtual int CompareTo(object o) = IComparable::CompareTo
+		{
+			if (o == nullptr) return 1;
+			Type^ t = o->GetType();
+			if (HexInt32::typeid->IsAssignableFrom(t))					return this->value.CompareTo(((HexInt32)o).value);
+			else if (UInt32::typeid->IsAssignableFrom(t))				return this->value.CompareTo((UInt32)o);
+			else if (IComparable<UInt32>::typeid->IsAssignableFrom(t))	return -((IComparable<UInt32>^)o)->CompareTo(this->value);
+			else														return this->value.CompareTo(Convert::ToUInt32(o));
+		}
+
+		virtual TypeCode GetTypeCode() { return TypeCode::UInt32; }
+		virtual bool		ToBoolean (IFormatProvider^ provider) = IConvertible::ToBoolean  { return Convert::ToBoolean (this->value, provider); }
+		virtual Byte		ToByte    (IFormatProvider^ provider) = IConvertible::ToByte     { return Convert::ToByte    (this->value, provider); }
+		virtual signed char	ToSByte   (IFormatProvider^ provider) = IConvertible::ToSByte    { return Convert::ToSByte   (this->value, provider); }
+		virtual Char		ToChar    (IFormatProvider^ provider) = IConvertible::ToChar     { return Convert::ToChar    (this->value, provider); }
+		virtual short		ToInt16   (IFormatProvider^ provider) = IConvertible::ToInt16    { return Convert::ToInt16   (this->value, provider); }
+		virtual ushort		ToUInt16  (IFormatProvider^ provider) = IConvertible::ToUInt16   { return Convert::ToUInt16  (this->value, provider); }
+		virtual int			ToInt32   (IFormatProvider^ provider) = IConvertible::ToInt32    { return Convert::ToInt32   (this->value, provider); }
+		virtual uint		ToUInt32  (IFormatProvider^ provider) = IConvertible::ToUInt32   { return Convert::ToUInt32  (this->value, provider); }
+		virtual slong		ToInt64   (IFormatProvider^ provider) = IConvertible::ToInt64    { return Convert::ToInt64   (this->value, provider); }
+		virtual ulong		ToUInt64  (IFormatProvider^ provider) = IConvertible::ToUInt64   { return Convert::ToUInt64  (this->value, provider); }
+		virtual float		ToSingle  (IFormatProvider^ provider) = IConvertible::ToSingle   { return Convert::ToSingle  (this->value, provider); }
+		virtual double		ToDouble  (IFormatProvider^ provider) = IConvertible::ToDouble   { return Convert::ToDouble  (this->value, provider); }
+		virtual decimal		ToDecimal (IFormatProvider^ provider) = IConvertible::ToDecimal	 { return Convert::ToDecimal (this->value, provider); }
+		virtual DateTime	ToDateTime(IFormatProvider^ provider) = IConvertible::ToDateTime { return Convert::ToDateTime(this->value, provider); }
+		virtual object ToType(Type^ conversionType, IFormatProvider^ provider) = IConvertible::ToType { return Convert::ChangeType(this->value, conversionType, provider); }
+	};
+
+	public value struct HexInt64 : IComparable, IFormattable, IConvertible, IComparable<UInt64>, IEquatable<UInt64>, IComparable<HexInt64>, IEquatable<HexInt64>
+	{
+	private:
+		UInt64 value;
+	public:
+		HexInt64(UInt64 value) { this->value = value; }
+		static operator UInt64(HexInt64 x) { return x.value; }
+		static operator HexInt64(UInt64 x) { return HexInt64(x); }
+		virtual string ToString() override { return this->value.ToString("X16"); }
+		string ToString(string format) { return this->value.ToString(String::IsNullOrEmpty(format) ? "X16" : format); }
+		virtual string ToString(IFormatProvider^ formatProvider) { return this->value.ToString("X16", formatProvider); }
+		virtual string ToString(string format, IFormatProvider^ formatProvider) { return this->value.ToString(String::IsNullOrEmpty(format) ? "X16" : format, formatProvider); }
+
+		virtual bool Equals(HexInt64 o) { return this->value == o.value; }
+		virtual bool Equals(UInt64 o) { return this->value == o; }
+
+		virtual int CompareTo(HexInt64 o) { return this->value.CompareTo(o.value); }
+		virtual int CompareTo(UInt64 o) { return this->value.CompareTo(o); }
+		
+		virtual int CompareTo(object o) = IComparable::CompareTo
+		{
+			if (o == nullptr) return 1;
+			Type^ t = o->GetType();
+			if (HexInt64::typeid->IsAssignableFrom(t))					return this->value.CompareTo(((HexInt64)o).value);
+			else if (UInt64::typeid->IsAssignableFrom(t))				return this->value.CompareTo((UInt64)o);
+			else if (IComparable<UInt64>::typeid->IsAssignableFrom(t))	return -((IComparable<UInt64>^)o)->CompareTo(this->value);
+			else														return this->value.CompareTo(Convert::ToUInt64(o));
+		}
+		
+		virtual TypeCode GetTypeCode() { return TypeCode::UInt64; }
+		virtual bool		ToBoolean (IFormatProvider^ provider) = IConvertible::ToBoolean  { return Convert::ToBoolean (this->value, provider); }
+		virtual Byte		ToByte    (IFormatProvider^ provider) = IConvertible::ToByte     { return Convert::ToByte    (this->value, provider); }
+		virtual signed char	ToSByte   (IFormatProvider^ provider) = IConvertible::ToSByte    { return Convert::ToSByte   (this->value, provider); }
+		virtual Char		ToChar    (IFormatProvider^ provider) = IConvertible::ToChar     { return Convert::ToChar    (this->value, provider); }
+		virtual short		ToInt16   (IFormatProvider^ provider) = IConvertible::ToInt16    { return Convert::ToInt16   (this->value, provider); }
+		virtual ushort		ToUInt16  (IFormatProvider^ provider) = IConvertible::ToUInt16   { return Convert::ToUInt16  (this->value, provider); }
+		virtual int			ToInt32   (IFormatProvider^ provider) = IConvertible::ToInt32    { return Convert::ToInt32   (this->value, provider); }
+		virtual uint		ToUInt32  (IFormatProvider^ provider) = IConvertible::ToUInt32   { return Convert::ToUInt32  (this->value, provider); }
+		virtual slong		ToInt64   (IFormatProvider^ provider) = IConvertible::ToInt64    { return Convert::ToInt64   (this->value, provider); }
+		virtual ulong		ToUInt64  (IFormatProvider^ provider) = IConvertible::ToUInt64   { return Convert::ToUInt64  (this->value, provider); }
+		virtual float		ToSingle  (IFormatProvider^ provider) = IConvertible::ToSingle   { return Convert::ToSingle  (this->value, provider); }
+		virtual double		ToDouble  (IFormatProvider^ provider) = IConvertible::ToDouble   { return Convert::ToDouble  (this->value, provider); }
+		virtual decimal		ToDecimal (IFormatProvider^ provider) = IConvertible::ToDecimal	 { return Convert::ToDecimal (this->value, provider); }
+		virtual DateTime	ToDateTime(IFormatProvider^ provider) = IConvertible::ToDateTime { return Convert::ToDateTime(this->value, provider); }
+		virtual object ToType(Type^ conversionType, IFormatProvider^ provider) = IConvertible::ToType { return Convert::ChangeType(this->value, conversionType, provider); }
+	};
+
 	public value struct RawData
 	{
 	private:

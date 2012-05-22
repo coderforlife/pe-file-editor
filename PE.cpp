@@ -22,7 +22,7 @@ using namespace PE::Utilities;
 generic<class T>
 ArrayPointerBase<T>::ArrayPointerBase(File ^f, int n) : file(f), n(n) { f->AddRef(gcnew UpdateMovableMemory(this, &ArrayPointerBase::UpdateMemory)); }
 
-RawData::RawData(File ^f, byte *x, uint n) : file(f), x(x), n(n) { f->AddRef(gcnew UpdateMovableMemory(*this, &RawData::UpdateMemory)); }
+RawData::RawData(File ^f, byte *x, uint n) : /*file(f),*/ x(x), n(n), readOnly(f->IsReadOnly) { f->AddRef(gcnew UpdateMovableMemory(this, &RawData::UpdateMemory)); }
 
 #undef NATIVE_WRAPPER_BASICS
 #define NATIVE_WRAPPER_BASICS(C, NT) /* C is the managed class to create, NT is a native type */ \

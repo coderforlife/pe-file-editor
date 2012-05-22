@@ -292,7 +292,7 @@ namespace PE {
 			for (int i = 0; i < this->n; ++i)
 				if (n == this->a[i].Name)
 					return this->Get(i);
-			return nullptr;
+			throw gcnew KeyNotFoundException();
 		} }
 		property SectionHeader ^default[string] { SectionHeader ^get(string n) { return this[SectionName(n)]; } }
 
@@ -300,7 +300,7 @@ namespace PE {
 			for (int i = 0; i < this->n; ++i)
 				if (this->a[i].VirtualAddress <= rva && rva < this->a[i].VirtualAddress + this->a[i].Misc.VirtualSize)
 					return this->Get(i);
-			return nullptr;
+			throw gcnew ArgumentOutOfRangeException();
 		}
 		SectionHeader ^GetByVA(ulong va);
 		SectionHeader ^Add(SectionName name, uint room, SectionCharacteristics chars);
@@ -382,26 +382,28 @@ namespace PE {
 
 		property HexInt32 Size { HexInt32 get() { return (HexInt32)(uint)this->f->getSize(); } void set(HexInt32 x) { if (!this->f->setSize(x, false)) throw gcnew Exception(); this->Revalidate(); } }
 
-		property RawData Data { RawData get() { DWORD n; byte *x = this->f->get(0, &n); return RawData(this, x, n); } }
-/**/	bool Set(array<byte> ^lpBuffer, uint dwOffset)				{ return this->f->set(NATIVE(lpBuffer), dwOffset); }
-/**/	bool Zero(uint dwSize, uint dwOffset)						{ return this->f->zero(dwSize, dwOffset); }
-/**/	bool Move(uint dwOffset, uint dwSize, int dwDistanceToMove)	{ return this->f->move(dwOffset, dwSize, dwDistanceToMove); }
-/**/	bool Shift(uint dwOffset, int dwDistanceToMove)				{ return this->f->shift(dwOffset, dwDistanceToMove); }
+		property RawData^ Data { RawData^ get() { DWORD n; byte *x = this->f->get(0, &n); return gcnew RawData(this, x, n); } }
+		RawData^ GetSectionData(SectionHeader^ s) { DWORD n; byte *x = this->f->get(s->PointerToRawData, &n); return gcnew RawData(this, x, Math::Min(n, s->SizeOfRawData)); }
+		RawData^ GetSectionData(SectionName s)	{ return this->GetSectionData(this->SectionHeaders[s]); }
+		RawData^ GetSectionData(string s)		{ return this->GetSectionData(this->SectionHeaders[s]); }
+
 		bool Flush()												{ return this->f->flush(); }
 
 		bool UpdatePEChkSum()										{ return this->f->updatePEChkSum(); }
-		property bool HasExtraData									{ bool get() { return this->f->hasExtraData(); } }
-/**/	//LPVOID GetExtraData(uint %size);	// pointer can modify the file
+		property RawData^ ExtraData									{ RawData^ get() { if (!this->f->hasExtraData()) { return nullptr; } DWORD n; byte *x = (byte*)this->f->getExtraData(&n); return gcnew RawData(this, x, n); } }
+		bool CreateExtraData()										{ DWORD n; return this->f->getExtraData(&n) != NULL; }
 		bool ClearCertificateTable()								{ if (!this->f->clearCertificateTable()) throw gcnew Exception(); this->Revalidate(); return true; }
 		property Version ^FileVersion								{ Version ^get() { ulong v = this->f->getFileVersion(); return gcnew Version((int)((v>>48)&0xFFFF), (int)((v>>32)&0xFFFF), (int)((v>>16)&0xFFFF), (int)(v&0xFFFF)); } }
 		property bool IsModified { bool get() { return this->f->isAlreadyModified(); } void set(bool x) { if (!x) throw gcnew ArgumentException(); this->f->setModifiedFlag(); } }
 		bool RemoveRelocs(uint start, uint end, bool reverse)		{ return this->f->removeRelocs(start, end, reverse); }
 		bool RemoveRelocs(uint start, uint end)						{ return this->f->removeRelocs(start, end, false); }
 
+		bool ResourceExists(ResID type, ResID name)						{ return this->f->resourceExists(type, name, (ushort*)NULL); }
 		bool ResourceExists(ResID type, ResID name, ushort lang)		{ return this->f->resourceExists(type, name, lang); }
-		//bool ResourceExists(ResID type, ResID name, ushort %lang)		{ return this->f->resourceExists(type, name, wptr(lang)); }
+		bool ResourceExists(ResID type, ResID name, ushort %lang)		{ return this->f->resourceExists(type, name, wptr(lang)); }
+		array<byte> ^GetResource(ResID type, ResID name)				{ size_t size = 0; return ToManaged(this->f->getResource(type, name, (ushort*)NULL, &size), size); }
 		array<byte> ^GetResource(ResID type, ResID name, ushort lang)	{ size_t size = 0; return ToManaged(this->f->getResource(type, name, lang, &size), size); }
-		//array<byte> ^GetResource(ResID type, ResID name, ushort %lang)	{ size_t size = 0; return ToManaged(this->f->getResource(type, name, wptr(lang), &size), size); }
+		array<byte> ^GetResource(ResID type, ResID name, ushort %lang)	{ size_t size = 0; return ToManaged(this->f->getResource(type, name, wptr(lang), &size), size); }
 		bool RemoveResource(ResID type, ResID name, ushort lang)		{ return this->f->removeResource(type, name, lang); }
 		bool AddResource(ResID type, ResID name, ushort lang, array<byte> ^data, Overwrite overwrite)	{ return this->f->addResource(type, name, lang, NATIVE(data), (uint)overwrite); }
 		bool AddResource(ResID type, ResID name, ushort lang, array<byte> ^data)						{ return this->f->addResource(type, name, lang, NATIVE(data), OVERWRITE_ALWAYS); }

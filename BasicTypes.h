@@ -18,6 +18,11 @@
 
 #include "general.h"
 
+using namespace System;
+using namespace System::Collections::Generic;
+using namespace System::Runtime::InteropServices;
+using namespace System::Text;
+
 namespace PE {
 	[Flags] public enum struct FileCharacteristics : ushort
 	{
@@ -170,7 +175,6 @@ namespace PE {
 		property string DefaultFormat { string get(); }
 		property ulong Value { ulong get(); }
 	};
-
 	public value struct HexInt32 : HexInt, IComparable<UInt32>, IEquatable<UInt32>, IComparable<HexInt32>, IEquatable<HexInt32>
 	{
 	private:
@@ -271,16 +275,84 @@ namespace PE {
 		virtual object ToType(Type^ conversionType, IFormatProvider^ provider) = IConvertible::ToType { return Convert::ChangeType(this->value, conversionType, provider); }
 	};
 
-	public value struct RawData
+	public ref class RawData
 	{
 	private:
-		File ^file;
 		byte *x;
 		uint n;
+		bool readOnly;
+		void checkGet(uint i, uint n) { if (i+n < i || i+n >= this->n) { throw gcnew ArgumentOutOfRangeException(); } }
+		void checkSet(uint i, uint n) { if (this->IsReadOnly) { throw gcnew InvalidOperationException(); } this->checkGet(i, n); }
 	internal:
 		RawData(File ^f, byte *x, uint n);
 		void UpdateMemory(ptrdiff_t dist) { x += dist; }
 	public:
+		static explicit operator array<byte>^(RawData ^d) { return d->Bytes; }
+		property array<byte>^ Bytes { array<byte>^ get() { return to_managed(this->x, this->n); } }
+		void Set(array<byte> ^lpBuffer, uint dwOffset)
+		{
+			this->checkSet(dwOffset, lpBuffer->Length);
+			Marshal::Copy(lpBuffer, 0, IntPtr(this->x+dwOffset), lpBuffer->Length);
+		}
+		void Zero(uint dwSize, uint dwOffset)
+		{
+			this->checkSet(dwOffset, dwSize);
+			memset(this->x + dwOffset, 0, dwSize);
+		}
+		void Move(uint dwOffset, uint dwSize, int dwDistanceToMove)
+		{
+			this->checkSet(dwOffset + dwDistanceToMove, dwSize);
+			memmove(this->x + dwOffset + dwDistanceToMove, this->x + dwOffset, dwSize);
+		}
+		void Shift(uint dwOffset, int dwDistanceToMove)
+		{
+			return this->Move(dwOffset, this->n - dwOffset - dwDistanceToMove, dwDistanceToMove);
+		}
+		property bool IsReadOnly { bool get() { return this->readOnly; } }
+		property IntPtr Pointer { IntPtr get() { return IntPtr(this->x); } }
+		property uint Length { uint get() { return this->n; } }
+		property byte default[uint]
+		{
+			byte get(uint i)			{ this->checkGet(i, 1); return this->x[i]; }
+			void set(uint i, byte x)	{ this->checkSet(i, 1); this->x[i] = x; }
+		}
+		property virtual byte default[int]
+		{
+			byte get(int i)			{ this->checkGet(i, 1); return this->x[i]; }
+			void set(int i, byte x)	{ this->checkSet(i, 1); this->x[i] = x; }
+		}
+
+		virtual int IndexOf(byte b) {
+			void *x = memchr(this->x, b, this->n);
+			return x == NULL ? -1 : (int)(((byte*)x)-this->x);
+		}
+		virtual void CopyTo(array<byte> ^a, int i) {
+			if (a == nullptr)					{ throw gcnew ArgumentNullException(); }
+			if (i < 0)							{ throw gcnew ArgumentOutOfRangeException(); }
+			if (a->Length + (uint)i > this->n)	{ throw gcnew ArgumentException(); }
+			Marshal::Copy(IntPtr(this->x), a, i, this->n);
+		}
+		
+		/*property virtual string HexString
+		{
+			string get()
+			{
+				StringBuilder ^sb = gcnew StringBuilder(this->n*2);
+				for (uint i = 0; i < this->n; ++i)
+					sb->AppendFormat(L"{0:X2}",this->x[i]);
+				return sb->ToString();
+			}
+		}*/
+		virtual string ToString() override
+		{
+			StringBuilder ^sb = gcnew StringBuilder(L"{");
+			bool trunc = this->n > 10;
+			int len = trunc ? 10 : (int)this->n;
+			for (int i = 0; i < len; ++i)
+				sb->AppendFormat(L"{0:X2}, ",this->x[i]);
+			string s = trunc ? sb->ToString()+L"..." : sb->ToString()->TrimEnd(L',', L' ');
+			return s+L"}";
+		}
 	};
 
 	public value struct SectionName

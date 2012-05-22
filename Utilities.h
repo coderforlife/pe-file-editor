@@ -39,7 +39,7 @@ namespace Utilities {
 	delegate void UpdateMovableMemory(ptrdiff_t dist);
 	
 	generic<class T>
-	public ref class ArrayPointerBase abstract : IList<T>, ICollection<T>, IEnumerable<T>
+	public ref class ArrayPointerBase abstract : IList<T>
 	{
 	protected:
 		ref class Enumerator : IEnumerator<T>
@@ -47,18 +47,18 @@ namespace Utilities {
 		protected:
 			ArrayPointerBase<T> ^p;
 			int i;
-			property object System_Collections_IEnumerator_Current { virtual object get() sealed = System::Collections::IEnumerator::Current::get { return (T)((this->i < 0 || this->i >= p->n) ? nullptr : p->Get(i)); } };
+			property object System_Collections_IEnumerator_Current { virtual object get() sealed = System::Collections::IEnumerator::Current::get { return this->Current; } };
 		internal:
 			Enumerator(ArrayPointerBase<T> ^p) : p(p), i(-1) { }
 		public:
-			property T Current { virtual T get () { return (T)((this->i < 0 || this->i >= p->n) ? nullptr : p->Get(i)); } }
+			property T Current { virtual T get () { if (this->i < 0 || this->i >= p->n) { throw gcnew InvalidOperationException(); } return p->Get(i); } }
 			virtual bool MoveNext() { return ++this->i < p->n; }
 			virtual void Reset() { this->i = -1; }
 			~Enumerator() {}
 		};
 		File ^file;
 		int n;
-		virtual System::Collections::IEnumerator ^System_Collections_IEnumerable_GetEnumerator() sealed = System::Collections::IEnumerable::GetEnumerator { return gcnew Enumerator(this); }
+		virtual System::Collections::IEnumerator ^System_Collections_IEnumerable_GetEnumerator() sealed = System::Collections::IEnumerable::GetEnumerator { return this->GetEnumerator(); }
 		void Check(int i) { if (i < 0 || i >= this->n) throw gcnew IndexOutOfRangeException(); }
 		virtual T Get(int i) = 0;			// does not bounds check
 		virtual void Set(int i, T x) = 0;	// does not bounds check
@@ -69,9 +69,9 @@ namespace Utilities {
 		virtual IEnumerator<T> ^GetEnumerator() { return gcnew Enumerator(this); }
 		property int Count			{ virtual int get() { return (int)this->n; } }
 		property bool IsReadOnly	{ virtual bool get() { return true; } }
-		property T default[int]		{
-			virtual T get(int i)			{ Check(i); return Get(i); }
-			virtual void set(int i, T x)	{ Check(i); Set(i, x); }
+		property virtual T default[int]		{
+			T get(int i)			{ Check(i); return Get(i); }
+			void set(int i, T x)	{ Check(i); Set(i, x); }
 		}
 		virtual bool Contains(T d) = 0;
 		virtual int IndexOf(T d) = 0;
@@ -79,7 +79,7 @@ namespace Utilities {
 			if (a == nullptr)				{ throw gcnew ArgumentNullException(); }
 			if (i < 0)						{ throw gcnew ArgumentOutOfRangeException(); }
 			if (a->Length + i > this->n)	{ throw gcnew ArgumentException(); }
-			for (int j = 0; j < this->n; ++i)	a[i+j] = Get(i);
+			for (int j = 0; j < this->n; ++j)	a[i+j] = Get(j);
 		}
 
 		virtual void Add(T)			{ throw gcnew NotSupportedException(); }

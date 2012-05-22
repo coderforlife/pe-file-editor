@@ -43,7 +43,7 @@ typedef System::Decimal decimal;
 // Interop
 template<typename T> __forceinline T *as_native(array<T> ^a) { pin_ptr<T> p = &a[0]; return p; }
 #define NATIVE(a) as_native(a), a->Length
-template<typename T>
+template<typename T> __forceinline
 static array<T> ^to_managed(T *a, size_t l) { array<T> ^m = gcnew array<T>(l); System::Runtime::InteropServices::Marshal::Copy((System::IntPtr)a, m, 0, l); return m; }
 
 #include <vcclr.h>

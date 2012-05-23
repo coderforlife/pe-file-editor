@@ -16,8 +16,8 @@
 
 #include "PE.h"
 
-using namespace PE;
-using namespace PE::Utilities;
+using namespace PE::Editor;
+using namespace PE::Editor::Utilities;
 
 generic<class T>
 ArrayPointerBase<T>::ArrayPointerBase(File ^f, int n) : file(f), n(n) { f->AddRef(gcnew UpdateMovableMemory(this, &ArrayPointerBase::UpdateMemory)); }
@@ -28,14 +28,14 @@ RawData::RawData(File ^f, byte *x, uint n) : /*file(f),*/ x(x), n(n), readOnly(f
 #define NATIVE_WRAPPER_BASICS(C, NT) /* C is the managed class to create, NT is a native type */ \
 	C::C(File ^f, NT *n) : file(f), n(n) { f->AddRef(gcnew UpdateMovableMemory(this, &C::UpdateMemory)); }
 
-NATIVE_WRAPPER_BASICS(FileHeader,		IMAGE_FILE_HEADER)
-NATIVE_WRAPPER_BASICS(DataDirectory,	IMAGE_DATA_DIRECTORY)
-NATIVE_WRAPPER_BASICS(OptionalHeader32,	IMAGE_OPTIONAL_HEADER32)
-NATIVE_WRAPPER_BASICS(OptionalHeader64,	IMAGE_OPTIONAL_HEADER64)
-NATIVE_WRAPPER_BASICS(NtHeaders32,		IMAGE_NT_HEADERS32)
-NATIVE_WRAPPER_BASICS(NtHeaders64,		IMAGE_NT_HEADERS64)
+NATIVE_WRAPPER_BASICS(FileHeader,		PE::Image::FileHeader)
+NATIVE_WRAPPER_BASICS(DataDirectory,	PE::Image::DataDirectory)
+NATIVE_WRAPPER_BASICS(OptionalHeader32,	PE::Image::OptionalHeader32)
+NATIVE_WRAPPER_BASICS(OptionalHeader64,	PE::Image::OptionalHeader64)
+NATIVE_WRAPPER_BASICS(NtHeaders32,		PE::Image::NTHeaders32)
+NATIVE_WRAPPER_BASICS(NtHeaders64,		PE::Image::NTHeaders64)
 
-NATIVE_WRAPPER_BASICS(SectionHeader,	IMAGE_SECTION_HEADER)
+NATIVE_WRAPPER_BASICS(SectionHeader,	PE::Image::SectionHeader)
 int SectionHeader::Index::get()			{ return this->file->GetSectionHeaderIndex(this->n); }
 void SectionHeader::Expand(uint room)	{ this->file->ExpandSectionHdr(this->n, room); }
 SectionHeader ^SectionHeader::AddBefore(SectionName name, uint room, SectionCharacteristics chars)	{ return this->file->CreateSection(this->n, name, room, chars); } // increment section header count?

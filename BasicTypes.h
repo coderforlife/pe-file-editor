@@ -23,7 +23,7 @@ using namespace System::Collections::Generic;
 using namespace System::Runtime::InteropServices;
 using namespace System::Text;
 
-namespace PE {
+namespace PE { namespace Editor {
 	[Flags] public enum struct FileCharacteristics : ushort
 	{
 		RelocsStripped			= 0x0001,
@@ -160,15 +160,9 @@ namespace PE {
 		// Add special combinations
 		CodeSection							= ContainsCode | MemExecute | MemRead,
 		InitializedDataSection				= ContainsInitializedData | MemRead,
-		WritableInitializedDataection		= ContainsInitializedData | MemRead | MemWrite,
+		WritableInitializedDataSection		= ContainsInitializedData | MemRead | MemWrite,
 		DiscardableInitializedDataSection	= ContainsInitializedData | MemRead | MemDiscardable,
 	};
-	public enum struct Overwrite : uint {
-		Always = 0, // OVERWRITE_ALWAYS,	//always adds the resource, even if it already exists
-		Never = 1, //OVERWRITE_NEVER,	//only adds a resource is it does not already exist
-		Only = 2, //OVERWRITE_ONLY,		//only adds a resource if it will overwrite another resource
-	};
-
 	public interface class HexInt : IComparable, IFormattable, IConvertible
 	{
 		property int Size { int get(); }
@@ -389,7 +383,7 @@ namespace PE {
 		SectionName(array<char> ^s) : n(gcnew array<byte>(LENGTH))	{ this->CopyFrom((array<byte>^)s); }
 		SectionName(string s) : n(gcnew array<byte>(LENGTH))		{ this->CopyFrom(System::Text::Encoding::ASCII->GetBytes(s)); }
 
-		literal int LENGTH = IMAGE_SIZEOF_SHORT_NAME;
+		literal int LENGTH = 8;
 
 		virtual string ToString() override
 		{
@@ -483,6 +477,6 @@ namespace PE {
 		static operator string(ResID t)	{ return t.ToString(); }
 	internal:
 		static operator void*(ResID t)	{ return t.p.ToPointer(); }
-		static operator LPWSTR(ResID t)	{ return (LPWSTR)t.p.ToPointer(); }
+		static operator PE::resid(ResID t)	{ return (PE::resid)t.p.ToPointer(); }
 	};
-}
+} }

@@ -24,7 +24,7 @@
 using namespace System;
 using namespace System::Collections::Generic;
 
-using namespace PE::Utilities;
+using namespace PE::Editor::Utilities;
 
 #define NATIVE_WRAPPER_BASICS(C, NT) /* C is the managed class, NT is a native type */ \
 	protected: File ^file; NT *n; \
@@ -64,11 +64,11 @@ using namespace PE::Utilities;
 
 #define NATIVE_WRAPPED_VERSION_PROPS(N, T) /* N is the property name (without Major/Minor), T is the type of the Major/Minor properties */ \
 	protected: NATIVE_WRAPPER_PROP(Major##N, T) NATIVE_WRAPPER_PROP(Minor##N, T) \
-	public: property Version ^N { Version ^get() { return gcnew Version(this->n->Major##N, this->n->Minor##N); } void set(Version ^x) { this->n->Major##N = x->Major; this->n->Minor##N = x->Minor; } }
+	public: property System::Version ^N { System::Version ^get() { return gcnew System::Version(this->n->Major##N, this->n->Minor##N); } void set(System::Version ^x) { this->n->Major##N = x->Major; this->n->Minor##N = x->Minor; } }
 
 #define NATIVE_WRAPPED_VERSION_PROPS_ABSTRACT(N, T) /* N is the property name (without Major/Minor), T is the type of the Major/Minor properties */ \
 	protected: NATIVE_WRAPPER_PROP_ABSTRACT(Major##N, T) NATIVE_WRAPPER_PROP_ABSTRACT(Minor##N, T) \
-	public: property Version ^N { Version ^get() { return gcnew Version(this->Major##N, this->Minor##N); } void set(Version ^x) { this->Major##N = x->Major; this->Minor##N = x->Minor; } }
+	public: property System::Version ^N { System::Version ^get() { return gcnew System::Version(this->Major##N, this->Minor##N); } void set(System::Version ^x) { this->Major##N = x->Major; this->Minor##N = x->Minor; } }
 
 #define NATIVE_WRAPPED_VERSION_PROPS_OVERRIDE(N, T) /* N is the property name (without Major/Minor), T is the type of the Major/Minor properties */ \
 	protected: NATIVE_WRAPPER_PROP_OVERRIDE(Major##N, T) NATIVE_WRAPPER_PROP_OVERRIDE(Minor##N, T) public:
@@ -93,14 +93,14 @@ using namespace PE::Utilities;
 		virtual int IndexOf(T ^d) override		{ NT *x = d; return (x >= this->a && x < (this->a+this->n)) ? (int)(x - this->a) : -1; }
 
 
-namespace PE {
+namespace PE { namespace Editor {
 	ref class File; // forward declaration
 
 	public ref class FileHeader
 	{
-		NATIVE_WRAPPER_BASICS(FileHeader, IMAGE_FILE_HEADER)
+		NATIVE_WRAPPER_BASICS(FileHeader, PE::Image::FileHeader)
 	public:
-		NATIVE_WRAPPER_ENUM_PROP(Machine,				PE::Machine, ushort)
+		NATIVE_WRAPPER_ENUM_PROP(Machine,				PE::Editor::Machine, PE::Image::FileHeader::MachineType)
 		NATIVE_WRAPPER_PROP		(NumberOfSections,		ushort)
 		property DateTime TimeDateStamp {
 			DateTime get() { return ToDateTime(this->n->TimeDateStamp); }
@@ -109,15 +109,15 @@ namespace PE {
 		NATIVE_WRAPPER_PROP		(PointerToSymbolTable,	HexInt32)
 		NATIVE_WRAPPER_PROP		(NumberOfSymbols,		uint)
 		NATIVE_WRAPPER_PROP		(SizeOfOptionalHeader,	ushort)
-		NATIVE_WRAPPER_ENUM_PROP(Characteristics,		FileCharacteristics, ushort)
+		NATIVE_WRAPPER_ENUM_PROP(Characteristics,		FileCharacteristics, PE::Image::FileHeader::CharacteristicFlags)
 		virtual string ToString() override {
 			return this->Machine.ToString()+L", "+this->NumberOfSections+L" Sections, "+this->Characteristics.ToString();
 		}
 	};
 	public ref class DataDirectory
 	{
-		NATIVE_WRAPPER_BASICS(DataDirectory, IMAGE_DATA_DIRECTORY)
-		NATIVE_WRAPPER_CAST_TO_NATIVE(DataDirectory, IMAGE_DATA_DIRECTORY)
+		NATIVE_WRAPPER_BASICS(DataDirectory, PE::Image::DataDirectory)
+		NATIVE_WRAPPER_CAST_TO_NATIVE(DataDirectory, PE::Image::DataDirectory)
 	public:
 		NATIVE_WRAPPER_PROP(VirtualAddress,	HexInt32)
 		NATIVE_WRAPPER_PROP(Size,			HexInt32)
@@ -127,7 +127,7 @@ namespace PE {
 	};
 	public ref class DataDirectories : ArrayPointerBase<DataDirectory^>
 	{
-		NATIVE_WRAPPED_ARRAY_BASICS(DataDirectories, DataDirectory, IMAGE_DATA_DIRECTORY)
+		NATIVE_WRAPPED_ARRAY_BASICS(DataDirectories, DataDirectory, PE::Image::DataDirectory)
 	public:
 		property DataDirectory ^default[DirectoryEntry] { DataDirectory ^get(DirectoryEntry i) { return this[(int)i]; } void set(DirectoryEntry i ,DataDirectory ^d) { this[(int)i] = d; } }
 	};
@@ -143,7 +143,7 @@ namespace PE {
 		NATIVE_WRAPPER_PROP_ABSTRACT			(AddressOfEntryPoint,		HexInt32)
 		NATIVE_WRAPPER_PROP_ABSTRACT			(BaseOfCode,				HexInt32)
 		//x86-only NATIVE_WRAPPER_PROP			(BaseOfData,				HexInt32)
-		NATIVE_WRAPPER_PROP_ABSTRACT			(ImageBase,					HexInt^) // either 32/64
+		//NATIVE_WRAPPER_PROP_ABSTRACT			(ImageBase,					HexInt^) // either 32/64
 		NATIVE_WRAPPER_PROP_ABSTRACT			(SectionAlignment,			HexInt32)
 		NATIVE_WRAPPER_PROP_ABSTRACT			(FileAlignment,				HexInt32)
 		NATIVE_WRAPPED_VERSION_PROPS_ABSTRACT	(OperatingSystemVersion,	ushort)
@@ -153,8 +153,8 @@ namespace PE {
 		NATIVE_WRAPPER_PROP_ABSTRACT			(SizeOfImage,				HexInt32)
 		NATIVE_WRAPPER_PROP_ABSTRACT			(SizeOfHeaders,				HexInt32)
 		NATIVE_WRAPPER_PROP_ABSTRACT			(CheckSum,					HexInt32)
-		NATIVE_WRAPPER_ENUM_PROP_ABSTRACT		(Subsystem,					PE::Subsystem,			ushort)
-		NATIVE_WRAPPER_ENUM_PROP_ABSTRACT		(DllCharacteristics,		PE::DllCharacteristics,	ushort)
+		NATIVE_WRAPPER_ENUM_PROP_ABSTRACT		(Subsystem,					PE::Editor::Subsystem,			ushort)
+		NATIVE_WRAPPER_ENUM_PROP_ABSTRACT		(DllCharacteristics,		PE::Editor::DllCharacteristics,	ushort)
 		NATIVE_WRAPPER_PROP_ABSTRACT			(SizeOfStackReserve,		HexInt^) // either 32/64
 		NATIVE_WRAPPER_PROP_ABSTRACT			(SizeOfStackCommit,			HexInt^) // either 32/64
 		NATIVE_WRAPPER_PROP_ABSTRACT			(SizeOfHeapReserve,			HexInt^) // either 32/64
@@ -162,14 +162,14 @@ namespace PE {
 		NATIVE_WRAPPER_PROP_ABSTRACT			(LoaderFlags,				HexInt32)
 		NATIVE_WRAPPER_PROP_ABSTRACT			(NumberOfRvaAndSizes,		uint)
 
-		property virtual PE::DataDirectories ^DataDirectories { PE::DataDirectories ^get() = 0; }
+		property virtual PE::Editor::DataDirectories ^DataDirectories { PE::Editor::DataDirectories ^get() = 0; }
 		virtual string ToString() override {
-			return this->Magic.ToString()+L", Base: "+this->ImageBase+L", "+this->Subsystem.ToString()+L", "+this->DllCharacteristics.ToString();
+			return this->Magic.ToString()+/*L", Base: "+this->ImageBase+*/L", "+this->Subsystem.ToString()+L", "+this->DllCharacteristics.ToString();
 		}
 	};
 	public ref class OptionalHeader32 : OptionalHeader
 	{
-		NATIVE_WRAPPER_BASICS(OptionalHeader32, IMAGE_OPTIONAL_HEADER32)
+		NATIVE_WRAPPER_BASICS(OptionalHeader32, PE::Image::OptionalHeader32)
 	public:
 		NATIVE_WRAPPER_ENUM_PROP_OVERRIDE		(Magic,						OptionalHeaderMagic,	ushort)
 		NATIVE_WRAPPED_VERSION_PROPS_OVERRIDE	(LinkerVersion,				byte)
@@ -179,7 +179,7 @@ namespace PE {
 		NATIVE_WRAPPER_PROP_OVERRIDE			(AddressOfEntryPoint,		HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(BaseOfCode,				HexInt32)
 		NATIVE_WRAPPER_PROP						(BaseOfData,				HexInt32)
-		NATIVE_WRAPPER_PROP_OVERRIDE_RT			(ImageBase,					HexInt^, HexInt32)
+		//NATIVE_WRAPPER_PROP_OVERRIDE_RT			(ImageBase,					HexInt^, HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(SectionAlignment,			HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(FileAlignment,				HexInt32)
 		NATIVE_WRAPPED_VERSION_PROPS_OVERRIDE	(OperatingSystemVersion,	ushort)
@@ -189,21 +189,21 @@ namespace PE {
 		NATIVE_WRAPPER_PROP_OVERRIDE			(SizeOfImage,				HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(SizeOfHeaders,				HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(CheckSum,					HexInt32)
-		NATIVE_WRAPPER_ENUM_PROP_OVERRIDE		(Subsystem,					PE::Subsystem,			ushort)
-		NATIVE_WRAPPER_ENUM_PROP_OVERRIDE		(DllCharacteristics,		PE::DllCharacteristics,	ushort)
+		NATIVE_WRAPPER_ENUM_PROP_OVERRIDE		(Subsystem,					PE::Editor::Subsystem,			PE::Image::OptionalHeader::SubsystemType)
+		NATIVE_WRAPPER_ENUM_PROP_OVERRIDE		(DllCharacteristics,		PE::Editor::DllCharacteristics,	PE::Image::OptionalHeader::DllCharacteristicFlags)
 		NATIVE_WRAPPER_PROP_OVERRIDE_RT			(SizeOfStackReserve,		HexInt^, HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE_RT			(SizeOfStackCommit,			HexInt^, HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE_RT			(SizeOfHeapReserve,			HexInt^, HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE_RT			(SizeOfHeapCommit,			HexInt^, HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(LoaderFlags,				HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(NumberOfRvaAndSizes,		uint)
-		property virtual PE::DataDirectories ^DataDirectories { PE::DataDirectories ^get() override {
-			return gcnew PE::DataDirectories(this->file, this->n->DataDirectory, this->n->NumberOfRvaAndSizes);
+		property virtual PE::Editor::DataDirectories ^DataDirectories { PE::Editor::DataDirectories ^get() override {
+			return gcnew PE::Editor::DataDirectories(this->file, this->n->DataDirectory, this->n->NumberOfRvaAndSizes);
 		} }
 	};
 	public ref class OptionalHeader64 : OptionalHeader
 	{
-		NATIVE_WRAPPER_BASICS(OptionalHeader64, IMAGE_OPTIONAL_HEADER64)
+		NATIVE_WRAPPER_BASICS(OptionalHeader64, PE::Image::OptionalHeader64)
 	public:
 		NATIVE_WRAPPER_ENUM_PROP_OVERRIDE		(Magic,						OptionalHeaderMagic,	ushort)
 		NATIVE_WRAPPED_VERSION_PROPS_OVERRIDE	(LinkerVersion,				byte)
@@ -212,7 +212,7 @@ namespace PE {
 		NATIVE_WRAPPER_PROP_OVERRIDE			(SizeOfUninitializedData,	HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(AddressOfEntryPoint,		HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(BaseOfCode,				HexInt32)
-		NATIVE_WRAPPER_PROP_OVERRIDE_RT			(ImageBase,					HexInt^, HexInt64)
+		//NATIVE_WRAPPER_PROP_OVERRIDE_RT			(ImageBase,					HexInt^, HexInt64)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(SectionAlignment,			HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(FileAlignment,				HexInt32)
 		NATIVE_WRAPPED_VERSION_PROPS_OVERRIDE	(OperatingSystemVersion,	ushort)
@@ -222,52 +222,52 @@ namespace PE {
 		NATIVE_WRAPPER_PROP_OVERRIDE			(SizeOfImage,				HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(SizeOfHeaders,				HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(CheckSum,					HexInt32)
-		NATIVE_WRAPPER_ENUM_PROP_OVERRIDE		(Subsystem,					PE::Subsystem,			ushort)
-		NATIVE_WRAPPER_ENUM_PROP_OVERRIDE		(DllCharacteristics,		PE::DllCharacteristics,	ushort)
+		NATIVE_WRAPPER_ENUM_PROP_OVERRIDE		(Subsystem,					PE::Editor::Subsystem,			PE::Image::OptionalHeader::SubsystemType)
+		NATIVE_WRAPPER_ENUM_PROP_OVERRIDE		(DllCharacteristics,		PE::Editor::DllCharacteristics,	PE::Image::OptionalHeader::DllCharacteristicFlags)
 		NATIVE_WRAPPER_PROP_OVERRIDE_RT			(SizeOfStackReserve,		HexInt^, HexInt64)
 		NATIVE_WRAPPER_PROP_OVERRIDE_RT			(SizeOfStackCommit,			HexInt^, HexInt64)
 		NATIVE_WRAPPER_PROP_OVERRIDE_RT			(SizeOfHeapReserve,			HexInt^, HexInt64)
 		NATIVE_WRAPPER_PROP_OVERRIDE_RT			(SizeOfHeapCommit,			HexInt^, HexInt64)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(LoaderFlags,				HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(NumberOfRvaAndSizes,		uint)
-		property virtual PE::DataDirectories ^DataDirectories { PE::DataDirectories ^get() override {
-			return gcnew PE::DataDirectories(this->file, this->n->DataDirectory, this->n->NumberOfRvaAndSizes);
+		property virtual PE::Editor::DataDirectories ^DataDirectories { PE::Editor::DataDirectories ^get() override {
+			return gcnew PE::Editor::DataDirectories(this->file, this->n->DataDirectory, this->n->NumberOfRvaAndSizes);
 		} }
 	};
 	public ref class NtHeaders abstract
 	{
 	public:
 		NATIVE_WRAPPER_PROP_ABSTRACT			(Signature,			HexInt32)
-		NATIVE_WRAPPED_WRAPPED_PROP_ABSTRACT	(FileHeader,		PE::FileHeader)
-		NATIVE_WRAPPED_WRAPPED_PROP_ABSTRACT	(OptionalHeader,	PE::OptionalHeader)
+		NATIVE_WRAPPED_WRAPPED_PROP_ABSTRACT	(FileHeader,		PE::Editor::FileHeader)
+		NATIVE_WRAPPED_WRAPPED_PROP_ABSTRACT	(OptionalHeader,	PE::Editor::OptionalHeader)
 	};
 	public ref class NtHeaders32 : NtHeaders
 	{
-		NATIVE_WRAPPER_BASICS(NtHeaders32, IMAGE_NT_HEADERS32)
+		NATIVE_WRAPPER_BASICS(NtHeaders32, PE::Image::NTHeaders32)
 	public:
 		NATIVE_WRAPPER_PROP_OVERRIDE			(Signature,			HexInt32)
-		NATIVE_WRAPPED_WRAPPED_PROP_OVERRIDE	(FileHeader,		PE::FileHeader,		PE::FileHeader)
-		NATIVE_WRAPPED_WRAPPED_PROP_OVERRIDE	(OptionalHeader,	PE::OptionalHeader,	OptionalHeader32)
+		NATIVE_WRAPPED_WRAPPED_PROP_OVERRIDE	(FileHeader,		PE::Editor::FileHeader,		PE::Editor::FileHeader)
+		NATIVE_WRAPPED_WRAPPED_PROP_OVERRIDE	(OptionalHeader,	PE::Editor::OptionalHeader,	OptionalHeader32)
 	};
 	public ref class NtHeaders64 : NtHeaders
 	{
-		NATIVE_WRAPPER_BASICS(NtHeaders64, IMAGE_NT_HEADERS64)
+		NATIVE_WRAPPER_BASICS(NtHeaders64, PE::Image::NTHeaders64)
 	public:
 		NATIVE_WRAPPER_PROP_OVERRIDE			(Signature,			HexInt32)
-		NATIVE_WRAPPED_WRAPPED_PROP_OVERRIDE	(FileHeader,		PE::FileHeader,		PE::FileHeader)
-		NATIVE_WRAPPED_WRAPPED_PROP_OVERRIDE	(OptionalHeader,	PE::OptionalHeader,	OptionalHeader64)
+		NATIVE_WRAPPED_WRAPPED_PROP_OVERRIDE	(FileHeader,		PE::Editor::FileHeader,		PE::Editor::FileHeader)
+		NATIVE_WRAPPED_WRAPPED_PROP_OVERRIDE	(OptionalHeader,	PE::Editor::OptionalHeader,	OptionalHeader64)
 	};
 	public ref class SectionHeader
 	{
-		NATIVE_WRAPPER_BASICS(SectionHeader, IMAGE_SECTION_HEADER)
-		NATIVE_WRAPPER_CAST_TO_NATIVE(SectionHeader, IMAGE_SECTION_HEADER)
+		NATIVE_WRAPPER_BASICS(SectionHeader, PE::Image::SectionHeader)
+		NATIVE_WRAPPER_CAST_TO_NATIVE(SectionHeader, PE::Image::SectionHeader)
 	public:
 		property int Index { int get(); };
 		property SectionName Name	{
 			SectionName get() { return this->n->Name; }
 			void set(SectionName x) { x.CopyTo(this->n->Name); }
 		}
-		NATIVE_WRAPPER_NAMED_PROP	(VirtualSize,			Misc.VirtualSize,		HexInt32)
+		NATIVE_WRAPPER_PROP			(VirtualSize,			HexInt32)
 		NATIVE_WRAPPER_PROP			(VirtualAddress,		HexInt32)
 		NATIVE_WRAPPER_PROP			(SizeOfRawData,			HexInt32)
 		NATIVE_WRAPPER_PROP			(PointerToRawData,		HexInt32)
@@ -286,7 +286,7 @@ namespace PE {
 	};
 	public ref class SectionHeaders : ArrayPointerBase<SectionHeader^>
 	{
-		NATIVE_WRAPPED_ARRAY_BASICS(SectionHeaders, SectionHeader, IMAGE_SECTION_HEADER)
+		NATIVE_WRAPPED_ARRAY_BASICS(SectionHeaders, SectionHeader, PE::Image::SectionHeader)
 	public:
 		property SectionHeader ^default[SectionName] { SectionHeader ^get(SectionName n) {
 			for (int i = 0; i < this->n; ++i)
@@ -298,7 +298,7 @@ namespace PE {
 
 		SectionHeader ^GetByRVA(uint rva) {
 			for (int i = 0; i < this->n; ++i)
-				if (this->a[i].VirtualAddress <= rva && rva < this->a[i].VirtualAddress + this->a[i].Misc.VirtualSize)
+				if (this->a[i].VirtualAddress <= rva && rva < this->a[i].VirtualAddress + this->a[i].VirtualSize)
 					return this->Get(i);
 			throw gcnew ArgumentOutOfRangeException();
 		}
@@ -311,7 +311,7 @@ namespace PE {
 	{
 	private:
 		byte *prev_data_pntr;
-		Native::PE::File *f;
+		PE::File *f;
 
 		LinkedList<System::Runtime::InteropServices::GCHandle> ^references;
 		void Revalidate()
@@ -334,7 +334,7 @@ namespace PE {
 			}
 			this->prev_data_pntr = cur_data_pntr;
 		}
-		void Init(Native::PE::File *f) {
+		void Init(PE::File *f) {
 			references = gcnew LinkedList<System::Runtime::InteropServices::GCHandle>();
 			this->f = f;
 			this->prev_data_pntr = this->f->get();
@@ -342,27 +342,29 @@ namespace PE {
 
 	internal:
 		void AddRef(UpdateMovableMemory ^umm) { this->references->AddLast(System::Runtime::InteropServices::GCHandle::Alloc(umm, System::Runtime::InteropServices::GCHandleType::Weak)); }
-		inline int GetSectionHeaderIndex(IMAGE_SECTION_HEADER *s)	{ return (int)(s - this->f->getSectionHeader(0)); }
-		inline int GetDataDirectoryIndex(IMAGE_DATA_DIRECTORY *d)	{ return (int)(d - this->f->getDataDirectory(0)); }
-		void ExpandSectionHdr(IMAGE_SECTION_HEADER *s, uint room)	{
-			IMAGE_SECTION_HEADER *n = this->f->getExpandedSectionHdr(this->GetSectionHeaderIndex(s), room);
+		inline int GetSectionHeaderIndex(PE::Image::SectionHeader *s)	{ return (int)(s - this->f->getSectionHeader(0)); }
+		inline int GetDataDirectoryIndex(PE::Image::DataDirectory *d)	{ return (int)(d - this->f->getDataDirectory(0)); }
+		void ExpandSectionHdr(PE::Image::SectionHeader *s, uint room)	{
+			PE::Image::SectionHeader *n = this->f->getExpandedSectionHdr(this->GetSectionHeaderIndex(s), room);
 			if (!n) throw gcnew Exception();
 			this->Revalidate();
 		}
-		SectionHeader ^CreateSection(IMAGE_SECTION_HEADER *s, SectionName Name, uint room, SectionCharacteristics chars)	{
+		SectionHeader ^CreateSection(PE::Image::SectionHeader *s, SectionName Name, uint room, SectionCharacteristics chars)	{
 			char name[SectionName::LENGTH];
 			Name.CopyTo(name);
-			IMAGE_SECTION_HEADER *n = s == NULL ? this->f->createSection(name, room, (uint)chars) : this->f->createSection(this->GetSectionHeaderIndex(s), name, room, (uint)chars);
+			PE::Image::SectionHeader *n = s == NULL ?
+				this->f->createSection(name, room, (PE::Image::SectionHeader::CharacteristicFlags)chars) :
+				this->f->createSection(this->GetSectionHeaderIndex(s), name, room, (PE::Image::SectionHeader::CharacteristicFlags)chars);
 			if (!n) throw gcnew Exception();
 			this->Revalidate();
 			return gcnew SectionHeader(this, n);
 		}
 
 	public:
-		//File(LPVOID data, size_t size, bool readonly) { this->Init(new Native::PE::File(?, ?, readonly)); }
-		//File(LPVOID data, size_t size)			{ this->Init(new Native::PE::File(?, ?, false)); }
-		File(string filename, bool readonly)		{ this->Init(new Native::PE::File(as_native(filename), readonly)); }
-		File(string filename)						{ this->Init(new Native::PE::File(as_native(filename), false)); }
+		//File(LPVOID data, size_t size, bool readonly) { this->Init(new PE::File(?, ?, readonly)); }
+		//File(LPVOID data, size_t size)			{ this->Init(new PE::File(?, ?, false)); }
+		File(string filename, bool readonly)		{ this->Init(new PE::File(as_native(filename), readonly)); }
+		File(string filename)						{ this->Init(new PE::File(as_native(filename), false)); }
 		~File()										{ delete f; f = NULL; }
 		property bool IsLoaded						{ bool get() { return this->f->isLoaded(); } }
 		property bool IsReadOnly					{ bool get() { return this->f->isReadOnly(); } }
@@ -373,27 +375,27 @@ namespace PE {
 		property bool Is64Bit						{ bool get() { return this->f->is64bit(); } }
 		property HexInt64 ImageBase					{ HexInt64 get() { return this->f->getImageBase(); } }
 
-		property PE::NtHeaders ^NtHeaders			{ PE::NtHeaders ^get() { return this->Is32Bit ? (PE::NtHeaders^)gcnew PE::NtHeaders32(this, this->f->getNtHeaders32()) : (PE::NtHeaders^)gcnew PE::NtHeaders64(this, this->f->getNtHeaders64()); } }
-		property PE::FileHeader ^FileHeader			{ PE::FileHeader ^get() { return gcnew PE::FileHeader(this, this->f->getFileHeader()); } }
-		property PE::OptionalHeader ^OptionalHeader	{ PE::OptionalHeader ^get() { return this->NtHeaders->OptionalHeader; } }
+		property PE::Editor::NtHeaders ^NtHeaders			{ PE::Editor::NtHeaders ^get() { return this->Is32Bit ? (PE::Editor::NtHeaders^)gcnew PE::Editor::NtHeaders32(this, this->f->getNtHeaders32()) : (PE::Editor::NtHeaders^)gcnew PE::Editor::NtHeaders64(this, this->f->getNtHeaders64()); } }
+		property PE::Editor::FileHeader ^FileHeader			{ PE::Editor::FileHeader ^get() { return gcnew PE::Editor::FileHeader(this, this->f->getFileHeader()); } }
+		property PE::Editor::OptionalHeader ^OptionalHeader	{ PE::Editor::OptionalHeader ^get() { return this->NtHeaders->OptionalHeader; } }
 
-		property PE::DataDirectories ^DataDirectories	{ PE::DataDirectories ^get() { return gcnew PE::DataDirectories(this, this->f->getDataDirectory(0), this->f->getDataDirectoryCount()); } }
-		property PE::SectionHeaders ^SectionHeaders		{ PE::SectionHeaders  ^get() { return gcnew PE::SectionHeaders (this, this->f->getSectionHeader(0), this->f->getSectionHeaderCount()); } }
+		property PE::Editor::DataDirectories ^DataDirectories	{ PE::Editor::DataDirectories ^get() { return gcnew PE::Editor::DataDirectories(this, this->f->getDataDirectory(0), this->f->getDataDirectoryCount()); } }
+		property PE::Editor::SectionHeaders ^SectionHeaders		{ PE::Editor::SectionHeaders  ^get() { return gcnew PE::Editor::SectionHeaders (this, this->f->getSectionHeader(0), this->f->getSectionHeaderCount()); } }
 
 		property HexInt32 Size { HexInt32 get() { return (HexInt32)(uint)this->f->getSize(); } void set(HexInt32 x) { if (!this->f->setSize(x, false)) throw gcnew Exception(); this->Revalidate(); } }
 
-		property RawData^ Data { RawData^ get() { DWORD n; byte *x = this->f->get(0, &n); return gcnew RawData(this, x, n); } }
-		RawData^ GetSectionData(SectionHeader^ s) { DWORD n; byte *x = this->f->get(s->PointerToRawData, &n); return gcnew RawData(this, x, Math::Min(n, s->SizeOfRawData)); }
+		property RawData^ Data { RawData^ get() { uint32_t n; byte *x = this->f->get(0, &n); return gcnew RawData(this, x, n); } }
+		RawData^ GetSectionData(SectionHeader^ s) { uint32_t n; byte *x = this->f->get(s->PointerToRawData, &n); return gcnew RawData(this, x, Math::Min(n, s->SizeOfRawData)); }
 		RawData^ GetSectionData(SectionName s)	{ return this->GetSectionData(this->SectionHeaders[s]); }
 		RawData^ GetSectionData(string s)		{ return this->GetSectionData(this->SectionHeaders[s]); }
 
 		bool Flush()												{ return this->f->flush(); }
 
 		bool UpdatePEChkSum()										{ return this->f->updatePEChkSum(); }
-		property RawData^ ExtraData									{ RawData^ get() { if (!this->f->hasExtraData()) { return nullptr; } DWORD n; byte *x = (byte*)this->f->getExtraData(&n); return gcnew RawData(this, x, n); } }
-		bool CreateExtraData()										{ DWORD n; return this->f->getExtraData(&n) != NULL; }
+		property RawData^ ExtraData									{ RawData^ get() { if (!this->f->hasExtraData()) { return nullptr; } uint32_t n; byte *x = (byte*)this->f->getExtraData(&n); return gcnew RawData(this, x, n); } }
+		bool CreateExtraData()										{ uint32_t n; return this->f->getExtraData(&n) != NULL; }
 		bool ClearCertificateTable()								{ if (!this->f->clearCertificateTable()) throw gcnew Exception(); this->Revalidate(); return true; }
-		property Version ^FileVersion								{ Version ^get() { ulong v = this->f->getFileVersion(); return gcnew Version((int)((v>>48)&0xFFFF), (int)((v>>32)&0xFFFF), (int)((v>>16)&0xFFFF), (int)(v&0xFFFF)); } }
+		property System::Version ^FileVersion						{ System::Version ^get() { PE::Version::Version v = this->f->getFileVersion(); return gcnew System::Version(v.Major, v.Minor, v.Build, v.Revision); } }
 		property bool IsModified { bool get() { return this->f->isAlreadyModified(); } void set(bool x) { if (!x) throw gcnew ArgumentException(); this->f->setModifiedFlag(); } }
 		bool RemoveRelocs(uint start, uint end, bool reverse)		{ return this->f->removeRelocs(start, end, reverse); }
 		bool RemoveRelocs(uint start, uint end)						{ return this->f->removeRelocs(start, end, false); }
@@ -405,13 +407,13 @@ namespace PE {
 		array<byte> ^GetResource(ResID type, ResID name, ushort lang)	{ size_t size = 0; return ToManaged(this->f->getResource(type, name, lang, &size), size); }
 		array<byte> ^GetResource(ResID type, ResID name, ushort %lang)	{ size_t size = 0; return ToManaged(this->f->getResource(type, name, wptr(lang), &size), size); }
 		bool RemoveResource(ResID type, ResID name, ushort lang)		{ return this->f->removeResource(type, name, lang); }
-		bool AddResource(ResID type, ResID name, ushort lang, array<byte> ^data, Overwrite overwrite)	{ return this->f->addResource(type, name, lang, NATIVE(data), (uint)overwrite); }
-		bool AddResource(ResID type, ResID name, ushort lang, array<byte> ^data)						{ return this->f->addResource(type, name, lang, NATIVE(data), OVERWRITE_ALWAYS); }
+		bool AddResource(ResID type, ResID name, ushort lang, array<byte> ^data, Overwrite overwrite)	{ return this->f->addResource(type, name, lang, NATIVE(data), overwrite); }
+		bool AddResource(ResID type, ResID name, ushort lang, array<byte> ^data)						{ return this->f->addResource(type, name, lang, NATIVE(data), PE::ALWAYS); }
 
 		//static LPVOID GetResourceDirect(LPVOID data, ResID type, ResID name); // must be freed, massively performance enhanced for a single retrieval and no editing // lang? size?
 		//static bool UpdatePEChkSum(LPBYTE data, size_t dwSize, size_t peOffset, uint dwOldCheck);
 		//static bool GetVersionInfo(LPVOID ver, string query, LPVOID %buffer, uint %len);
 		//static VS_FIXEDFILEINFO *GetVersionInfo(LPVOID ver);
-		static void UnmapAllViewsOfFile(string file)				{ Native::PE::File::UnmapAllViewsOfFile(as_native(file)); }
+		//static void UnmapAllViewsOfFile(string file)				{ PE::File::UnmapAllViewsOfFile(as_native(file)); }
 	};
-}
+} }

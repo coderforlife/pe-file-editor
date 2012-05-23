@@ -23,7 +23,7 @@
 using namespace System;
 using namespace System::Collections::Generic;
 
-namespace PE {
+namespace PE { namespace Editor {
 	ref class File; // forward declaration
 namespace Utilities {
 	static array<byte> ^ToManaged(void *x, size_t s)
@@ -88,4 +88,4 @@ namespace Utilities {
 		virtual bool Remove(T)		{ throw gcnew NotSupportedException(); }
 		virtual void RemoveAt(int)	{ throw gcnew NotSupportedException(); }
 	};
-} }
+} } }

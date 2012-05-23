@@ -51,5 +51,5 @@ __forceinline const wchar_t *as_native(System::String ^s) { pin_ptr<const wchar_
 __forceinline System::String ^as_managed(wchar_t *s) { return System::Runtime::InteropServices::Marshal::PtrToStringUni((System::IntPtr)s); }
 
 template<typename T> __forceinline T *ptr(T %a) { pin_ptr<T> p = &a; return p; }
-#define dwptr(a) (DWORD*)ptr(a)
-#define wptr(a) (WORD*)ptr(a)
+#define dwptr(a) (uint32_t*)ptr(a)
+#define wptr(a) (uint16_t*)ptr(a)

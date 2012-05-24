@@ -35,7 +35,7 @@ It is designed to be used directly from PowerShell. Example usage:
     PS> $exe.FileHeader
 
     Characteristics      : ExecutableImage, LargeAddressAware
-    SizeOfOptionalHeader : 240
+    SizeOfOptionalHeader : 0240
     NumberOfSymbols      : 0
     PointerToSymbolTable : 00000000
     TimeDateStamp        : 2/25/2011 4:24:04 AM

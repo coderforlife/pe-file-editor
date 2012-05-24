@@ -169,6 +169,55 @@ namespace PE { namespace Editor {
 		property string DefaultFormat { string get(); }
 		property ulong Value { ulong get(); }
 	};
+	public value struct HexInt16 : HexInt, IComparable<UInt16>, IEquatable<UInt16>, IComparable<HexInt16>, IEquatable<HexInt16>
+	{
+	private:
+		UInt16 value;
+	public:
+		HexInt16(UInt16 value) { this->value = value; }
+		property virtual int Size { int get() { return 2; } }
+		property virtual string DefaultFormat { string get() { return L"X4"; } }
+		property virtual ulong Value { ulong get() { return this->value; } }
+		static operator UInt16(HexInt16 x) { return x.value; }
+		static operator HexInt16(UInt16 x) { return HexInt16(x); }
+		virtual string ToString() override { return this->value.ToString(L"X4"); }
+		string ToString(string format) { return this->value.ToString(String::IsNullOrEmpty(format) ? L"X4" : format); }
+		virtual string ToString(IFormatProvider^ formatProvider) { return this->value.ToString(L"X4", formatProvider); }
+		virtual string ToString(string format, IFormatProvider^ formatProvider) { return this->value.ToString(String::IsNullOrEmpty(format) ? L"X4" : format, formatProvider); }
+
+		virtual bool Equals(HexInt16 o) { return this->value == o.value; }
+		virtual bool Equals(UInt16 o) { return this->value == o; }
+
+		virtual int CompareTo(HexInt16 o) { return this->value.CompareTo(o.value); }
+		virtual int CompareTo(UInt16 o) { return this->value.CompareTo(o); }
+
+		virtual int CompareTo(object o) = IComparable::CompareTo
+		{
+			if (o == nullptr) return 1;
+			Type^ t = o->GetType();
+			if (HexInt16::typeid->IsAssignableFrom(t))					return this->value.CompareTo(((HexInt16)o).value);
+			else if (UInt16::typeid->IsAssignableFrom(t))				return this->value.CompareTo((UInt16)o);
+			else if (IComparable<UInt16>::typeid->IsAssignableFrom(t))	return -((IComparable<UInt16>^)o)->CompareTo(this->value);
+			else														return this->value.CompareTo(Convert::ToUInt16(o));
+		}
+
+		virtual TypeCode GetTypeCode() { return TypeCode::UInt16; }
+		virtual bool		ToBoolean (IFormatProvider^ provider) = IConvertible::ToBoolean  { return Convert::ToBoolean (this->value, provider); }
+		virtual Byte		ToByte    (IFormatProvider^ provider) = IConvertible::ToByte     { return Convert::ToByte    (this->value, provider); }
+		virtual signed char	ToSByte   (IFormatProvider^ provider) = IConvertible::ToSByte    { return Convert::ToSByte   (this->value, provider); }
+		virtual Char		ToChar    (IFormatProvider^ provider) = IConvertible::ToChar     { return Convert::ToChar    (this->value, provider); }
+		virtual short		ToInt16   (IFormatProvider^ provider) = IConvertible::ToInt16    { return Convert::ToInt16   (this->value, provider); }
+		virtual ushort		ToUInt16  (IFormatProvider^ provider) = IConvertible::ToUInt16   { return Convert::ToUInt16  (this->value, provider); }
+		virtual int			ToInt32   (IFormatProvider^ provider) = IConvertible::ToInt32    { return Convert::ToInt32   (this->value, provider); }
+		virtual uint		ToUInt32  (IFormatProvider^ provider) = IConvertible::ToUInt32   { return Convert::ToUInt32  (this->value, provider); }
+		virtual slong		ToInt64   (IFormatProvider^ provider) = IConvertible::ToInt64    { return Convert::ToInt64   (this->value, provider); }
+		virtual ulong		ToUInt64  (IFormatProvider^ provider) = IConvertible::ToUInt64   { return Convert::ToUInt64  (this->value, provider); }
+		virtual float		ToSingle  (IFormatProvider^ provider) = IConvertible::ToSingle   { return Convert::ToSingle  (this->value, provider); }
+		virtual double		ToDouble  (IFormatProvider^ provider) = IConvertible::ToDouble   { return Convert::ToDouble  (this->value, provider); }
+		virtual decimal		ToDecimal (IFormatProvider^ provider) = IConvertible::ToDecimal	 { return Convert::ToDecimal (this->value, provider); }
+		virtual DateTime	ToDateTime(IFormatProvider^ provider) = IConvertible::ToDateTime { return Convert::ToDateTime(this->value, provider); }
+		virtual object ToType(Type^ conversionType, IFormatProvider^ provider) = IConvertible::ToType { return Convert::ChangeType(this->value, conversionType, provider); }
+	};
 	public value struct HexInt32 : HexInt, IComparable<UInt32>, IEquatable<UInt32>, IComparable<HexInt32>, IEquatable<HexInt32>
 	{
 	private:
@@ -218,7 +267,6 @@ namespace PE { namespace Editor {
 		virtual DateTime	ToDateTime(IFormatProvider^ provider) = IConvertible::ToDateTime { return Convert::ToDateTime(this->value, provider); }
 		virtual object ToType(Type^ conversionType, IFormatProvider^ provider) = IConvertible::ToType { return Convert::ChangeType(this->value, conversionType, provider); }
 	};
-
 	public value struct HexInt64 : HexInt, IComparable<UInt64>, IEquatable<UInt64>, IComparable<HexInt64>, IEquatable<HexInt64>
 	{
 	private:

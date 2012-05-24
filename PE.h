@@ -50,6 +50,9 @@ using namespace PE::Editor::Utilities;
 #define NATIVE_WRAPPER_NAMED_PROP(N, NN, T) /* N is the property name, NN is the native property name, T is the type of the property */ \
 	property T N { T get() { return this->n->NN; } void set(T x) { this->n->NN = x; } }
 
+#define NATIVE_WRAPPER_NAMED_PROP_OVERRIDE_RT(N, NN, RT, T) /* N is the property name, NN is the native property name, RT is the return type, T is the type of the property */ \
+	property virtual RT N { RT get() override { return (RT)(T)this->n->NN; } void set(RT x) override { this->n->NN = (T)x; } }
+
 #define NATIVE_WRAPPER_ENUM_PROP(N, E, T) /* N is the property name, E is the enum type, T is the underlying type of the property */ \
 	property E N { E get() { return (E)this->n->N; } void set(E x) { this->n->N = (T)x; } }
 
@@ -108,7 +111,7 @@ namespace PE { namespace Editor {
 		}
 		NATIVE_WRAPPER_PROP		(PointerToSymbolTable,	HexInt32)
 		NATIVE_WRAPPER_PROP		(NumberOfSymbols,		uint)
-		NATIVE_WRAPPER_PROP		(SizeOfOptionalHeader,	ushort)
+		NATIVE_WRAPPER_PROP		(SizeOfOptionalHeader,	HexInt16)
 		NATIVE_WRAPPER_ENUM_PROP(Characteristics,		FileCharacteristics, PE::Image::FileHeader::CharacteristicFlags)
 		virtual string ToString() override {
 			return this->Machine.ToString()+L", "+this->NumberOfSections+L" Sections, "+this->Characteristics.ToString();
@@ -143,7 +146,7 @@ namespace PE { namespace Editor {
 		NATIVE_WRAPPER_PROP_ABSTRACT			(AddressOfEntryPoint,		HexInt32)
 		NATIVE_WRAPPER_PROP_ABSTRACT			(BaseOfCode,				HexInt32)
 		//x86-only NATIVE_WRAPPER_PROP			(BaseOfData,				HexInt32)
-		//NATIVE_WRAPPER_PROP_ABSTRACT			(ImageBase,					HexInt^) // either 32/64
+		NATIVE_WRAPPER_PROP_ABSTRACT			(ImageBase,					HexInt^) // either 32/64
 		NATIVE_WRAPPER_PROP_ABSTRACT			(SectionAlignment,			HexInt32)
 		NATIVE_WRAPPER_PROP_ABSTRACT			(FileAlignment,				HexInt32)
 		NATIVE_WRAPPED_VERSION_PROPS_ABSTRACT	(OperatingSystemVersion,	ushort)
@@ -179,7 +182,7 @@ namespace PE { namespace Editor {
 		NATIVE_WRAPPER_PROP_OVERRIDE			(AddressOfEntryPoint,		HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(BaseOfCode,				HexInt32)
 		NATIVE_WRAPPER_PROP						(BaseOfData,				HexInt32)
-		//NATIVE_WRAPPER_PROP_OVERRIDE_RT			(ImageBase,					HexInt^, HexInt32)
+		NATIVE_WRAPPER_NAMED_PROP_OVERRIDE_RT	(ImageBase,	ImageBase32,	HexInt^, HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(SectionAlignment,			HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(FileAlignment,				HexInt32)
 		NATIVE_WRAPPED_VERSION_PROPS_OVERRIDE	(OperatingSystemVersion,	ushort)
@@ -212,7 +215,7 @@ namespace PE { namespace Editor {
 		NATIVE_WRAPPER_PROP_OVERRIDE			(SizeOfUninitializedData,	HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(AddressOfEntryPoint,		HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(BaseOfCode,				HexInt32)
-		//NATIVE_WRAPPER_PROP_OVERRIDE_RT			(ImageBase,					HexInt^, HexInt64)
+		NATIVE_WRAPPER_NAMED_PROP_OVERRIDE_RT	(ImageBase,	ImageBase64,	HexInt^, HexInt64)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(SectionAlignment,			HexInt32)
 		NATIVE_WRAPPER_PROP_OVERRIDE			(FileAlignment,				HexInt32)
 		NATIVE_WRAPPED_VERSION_PROPS_OVERRIDE	(OperatingSystemVersion,	ushort)

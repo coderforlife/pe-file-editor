@@ -26,13 +26,6 @@ using namespace System::Collections::Generic;
 namespace PE { namespace Editor {
 	ref class File; // forward declaration
 namespace Utilities {
-	static array<byte> ^ToManaged(void *x, size_t s)
-	{
-		array<byte> ^a = gcnew array<byte>((int)s);
-		System::Runtime::InteropServices::Marshal::Copy(IntPtr(x), a, 0, (int)s);
-		free(x);
-		return a;
-	}
 	static DateTime ToDateTime(uint t) { return DateTime::FromFileTimeUtc(((__int64)((ulong)t * (ulong)10000000u)) + 116444736000000000); }
 	static uint ToPEFileTime(DateTime d) { return (uint)((d.ToFileTimeUtc() - 116444736000000000) / 10000000u); }
 	

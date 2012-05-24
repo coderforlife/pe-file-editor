@@ -392,9 +392,9 @@ namespace PE { namespace Editor {
 		bool Flush()												{ return this->f->flush(); }
 
 		bool UpdatePEChkSum()										{ return this->f->updatePEChkSum(); }
-		property RawData^ ExtraData									{ RawData^ get() { if (!this->f->hasExtraData()) { return nullptr; } uint32_t n; byte *x = (byte*)this->f->getExtraData(&n); return gcnew RawData(this, x, n); } }
-		bool CreateExtraData()										{ uint32_t n; return this->f->getExtraData(&n) != NULL; }
-		bool ClearCertificateTable()								{ if (!this->f->clearCertificateTable()) throw gcnew Exception(); this->Revalidate(); return true; }
+		property RawData^ ExtraData									{ RawData^ get() { if (!this->f->hasExtraData()) { return nullptr; } uint32_t n; byte *x = (byte*)(void*)this->f->getExtraData(&n); return gcnew RawData(this, x, n); } }
+		bool CreateExtraData()										{ uint32_t n; return this->f->getExtraData(&n) != null; }
+		bool ClearCertificateTable()								{ if (this->f->clearCertificateTable()) { this->Revalidate(); return true; } return false; }
 		property System::Version ^FileVersion						{ System::Version ^get() { PE::Version::Version v = this->f->getFileVersion(); return gcnew System::Version(v.Major, v.Minor, v.Build, v.Revision); } }
 		property bool IsModified { bool get() { return this->f->isAlreadyModified(); } void set(bool x) { if (!x) throw gcnew ArgumentException(); this->f->setModifiedFlag(); } }
 		bool RemoveRelocs(uint start, uint end, bool reverse)		{ return this->f->removeRelocs(start, end, reverse); }
@@ -403,9 +403,9 @@ namespace PE { namespace Editor {
 		bool ResourceExists(ResID type, ResID name)						{ return this->f->resourceExists(type, name, (ushort*)NULL); }
 		bool ResourceExists(ResID type, ResID name, ushort lang)		{ return this->f->resourceExists(type, name, lang); }
 		bool ResourceExists(ResID type, ResID name, ushort %lang)		{ return this->f->resourceExists(type, name, wptr(lang)); }
-		array<byte> ^GetResource(ResID type, ResID name)				{ size_t size = 0; return ToManaged(this->f->getResource(type, name, (ushort*)NULL, &size), size); }
-		array<byte> ^GetResource(ResID type, ResID name, ushort lang)	{ size_t size = 0; return ToManaged(this->f->getResource(type, name, lang, &size), size); }
-		array<byte> ^GetResource(ResID type, ResID name, ushort %lang)	{ size_t size = 0; return ToManaged(this->f->getResource(type, name, wptr(lang), &size), size); }
+		array<byte> ^GetResource(ResID type, ResID name)				{ size_t size = 0; return to_managed((bytes)this->f->getResource(type, name, (ushort*)NULL, &size), size); }
+		array<byte> ^GetResource(ResID type, ResID name, ushort lang)	{ size_t size = 0; return to_managed((bytes)this->f->getResource(type, name, lang, &size), size); }
+		array<byte> ^GetResource(ResID type, ResID name, ushort %lang)	{ size_t size = 0; return to_managed((bytes)this->f->getResource(type, name, wptr(lang), &size), size); }
 		bool RemoveResource(ResID type, ResID name, ushort lang)		{ return this->f->removeResource(type, name, lang); }
 		bool AddResource(ResID type, ResID name, ushort lang, array<byte> ^data, Overwrite overwrite)	{ return this->f->addResource(type, name, lang, NATIVE(data), overwrite); }
 		bool AddResource(ResID type, ResID name, ushort lang, array<byte> ^data)						{ return this->f->addResource(type, name, lang, NATIVE(data), PE::ALWAYS); }
